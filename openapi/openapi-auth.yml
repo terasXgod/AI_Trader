@@ -10,12 +10,13 @@ servers:
     description: Локальная разработка
 
 paths:
+  # WEB2 FLOW
   /auth/register:
     post:
       summary: login to account
       description: login to account with password or any services(need to do)
       tags:
-        - auth
+        - auth-web2
       requestBody:
         required: true
         content:
@@ -72,12 +73,12 @@ paths:
                 title: "Internal Server Error"
                 status: 500
                 detail: "An unexpected error occurred. Please try again later."
-  /auth/login:
+  /auth/login-password:
     post:
       summary: login to account
       description: login to account with password or any services(need to do)
       tags:
-        - auth
+        - auth-web2
       requestBody:
         required: true
         content:
@@ -134,12 +135,168 @@ paths:
                 title: "Internal Server Error"
                 status: 500
                 detail: "An unexpected error occurred. Please try again later."
+
+  # WEB3 FLOW
+  /auth/web3/nonce:
+    get:
+      summary: get nonce for web3 authentication
+      description: get nonce for web3 authentication using wallet address
+      tags:
+        - auth-web3
+      parameters:
+        - in: query
+          name: wallet_address
+          schema:
+            type: string
+            description: wallet address for authentication
+            example: "0x1234567890abcdef1234567890abcdef12345678"
+      responses:
+        '200':
+          description: Nonce generated. return nonce for signing
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - nonce
+                properties:
+                  nonce:
+                    type: string
+                    description: nonce for signing
+                    example: "1234567890abcdef"
+        '400':
+          description: not valid wallet address
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Invalid input"
+                status: 400
+                detail: "Wallet address is missing or invalid."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Internal Server Error"
+                status: 500
+                detail: "An unexpected error occurred. Please try again later."
+
+  /auth/web3/login:
+    post:
+      summary: login to account using web3
+      description: login to account using web3 signature
+      tags:
+        - auth-web3
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Web3AuthRequest'
+      responses:
+        '200':
+          description: User authenticated. return access and refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwtAuthResponse'
+        '400':
+          description: not valid wallet address or signature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Invalid input"
+                status: 400
+                detail: "Wallet address or signature is missing or invalid."
+        '401':
+          description: invalid signature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Unauthorized"
+                status: 401
+                detail: "Invalid signature."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Internal Server Error"
+                status: 500
+                detail: "An unexpected error occurred. Please try again later."
+
+  /auth/web3/bind:
+    post:
+      summary: bind web3 wallet to account
+      description: bind web3 wallet to account using web3 signature (need to do)
+      tags:
+        - auth-web3
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Web3AuthRequest'
+      responses:
+        '200':
+          description: Wallet bound. return success message
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: success message
+                    example: "Wallet bound successfully."
+        '400':
+          description: not valid wallet address or signature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Invalid input"
+                status: 400
+                detail: "Wallet address or signature is missing or invalid."
+        '401':
+          description: invalid signature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Unauthorized"
+                status: 401
+                detail: "Invalid signature."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Internal Server Error"
+                status: 500
+                detail: "An unexpected error occurred. Please try again later."
+
+  # TOKEN MANAGEMENT
   /auth/refresh:
     post:
       summary: refresh access token
       description: refresh access token using refresh token
       tags:
-        - auth
+        - token-management
       requestBody:
         required: true
         content:
@@ -159,15 +316,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/JwtAuthResponse'
-                properties:
-                  access_token:
-                    type: string
-                    description: JWT access token
-                    example: 1234567890abcdef
-                  refresh_token:
-                    type: string
-                    description: JWT refresh token
-                    example: 1234567890abcdef
         '400':
           description: not valid refresh token
           content:
@@ -204,7 +352,7 @@ paths:
       summary: logout from account
       description: logout from account using access token(from this session) or refresh token(from all sessions)
       tags:
-        - auth
+        - token-management
       requestBody:
         required: true
         content:
@@ -229,12 +377,14 @@ paths:
                     type: string
                     description: success message
                     example: "User logged out successfully."
+
+  # PASSWORD RECOVERY
   /auth/forgot-password:
     post:
       summary: forgot password
       description: send email with reset password link
       tags:
-        - auth
+        - auth-web2
       requestBody:
         required: true
         content:
@@ -285,7 +435,7 @@ paths:
       summary: reset password
       description: reset password using token from email
       tags:
-        - auth
+        - auth-web2
       requestBody:
         required: true
         content:
@@ -369,19 +519,34 @@ components:
           type: string
           description: detail description for developers and logs
     JwtAuthResponse:
-        type: object
-        required:
-            - access_token
-            - refresh_token
-        properties:
-            access_token:
-              type: string
-              description: JWT access token
-              example: 1234567890abcdef
-            refresh_token:
-              type: string
-              description: JWT refresh token
-              example: 1234567890abcdef
+      type: object
+      required:
+        - access_token
+        - refresh_token
+      properties:
+        access_token:
+          type: string
+          description: JWT access token
+          example: 1234567890abcdef
+        refresh_token:
+          type: string
+          description: JWT refresh token
+          example: 1234567890abcdef
+    Web3AuthRequest:
+      type: object
+      required:
+        - wallet_address
+        - signature
+      properties:
+        wallet_address:
+          type: string
+          description: wallet address for authentication
+          example: "0x1234567890abcdef1234567890abcdef12345678"
+        signature:
+          type: string
+          description: signature of nonce for authentication
+          example: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+
 
   securitySchemes:
     bearerAuth:
