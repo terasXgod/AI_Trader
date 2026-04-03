@@ -1,0 +1,369 @@
+openapi: 3.0.3
+info:
+  title: Crypto AI Predictor API
+  description: API для получения прогнозов по криптовалютам от нейросети
+  version: 1.0.0
+servers:
+  - url: пока ещё нет
+    description: Продакшен
+  - url: http://localhost:8000/v1
+    description: Локальная разработка
+
+security:
+  - bearerAuth: []
+
+paths:
+  /wallet:
+    get:
+      summary: get wallet info
+      description: git info from wallet including balance and difference from previous day
+      tags:
+        - Wallet
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletInfo'
+        '409':
+          description: wallet not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: Wallet Not Found
+                status: 409
+                detail: No wallet found for the user
+
+  /wallet/history:
+    get:
+      summary: get wallet history
+      description: git history of wallet balance changes
+      tags:
+        - Wallet
+      parameters:
+        - in: query
+          name: interval
+          required: true
+          schema:
+            type: string
+            enum: [60s, 10m, 1h, 1d, 1w, 1M]
+          description: Interval for grouping balance changes (e.g., 60s, 10m, 1h, 1d, 1w, 1M)
+        - in: query
+          name: start_time
+          required: false
+          schema:
+            type: integer
+          description: Start time for filtering balance changes (Unix timestamp)
+        - in: query
+          name: end_time
+          required: false
+          schema:
+            type: integer
+          description: End time for filtering balance changes (Unix timestamp)
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WalletInfo'
+        '400':
+          description: invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: Invalid Parameters
+                status: 400
+                detail: The provided parameters are invalid or missing
+
+
+  /wallet/existing-coins:
+    get:
+      summary: get existing coins
+      description: git existing coins in wallet
+      tags:
+        - Wallet
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PortfolioAsset'
+
+  /orders:
+    get:
+      summary: get orders
+      description: git orders of wallet
+      tags:
+        - Orders
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Position'
+  /orders/{id}:
+    get:
+      summary: get order by id
+      description: git order by id
+      tags:
+        - Orders
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID of the order to retrieve
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PositionDetails'
+        '404':
+          description: order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: Order Not Found
+                status: 404
+                detail: No order found with the specified ID
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: Internal Server Error
+                status: 500
+                detail: An unexpected error occurred while processing the request
+  /coins:
+    get:
+      summary: get coins
+      description: git coins info
+      tags:
+        - Coins
+      parameters:
+        - in: query
+          name: sort_by
+          required: false
+          schema:
+            type: string
+            enum: [current_price, name, symbol]
+          description: Field to sort the coins by (e.g., current_price, name, symbol)
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                $ref: '#/components/schemas/Asset'
+        '400':
+          description: invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: Invalid Parameters
+                status: 400
+                detail: The provided parameters are invalid or missing
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: Internal Server Error
+                status: 500
+                detail: An unexpected error occurred while processing the request
+
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - title
+        - status
+        - detail
+      properties:
+        title:
+          type: string
+          description: short title of error
+        status:
+          type: integer
+          description: http status code
+        detail:
+          type: string
+          description: detail description for developers and logs
+    WalletInfo:
+      type: object
+      properties:
+        balance:
+          type: number
+          format: float
+          example: 123.45
+          description: Current balance of the wallet
+        difference_from_previous_day:
+          type: number
+          format: float
+          example: -10.5
+          description: Difference in balance compared to the previous day
+        difference_percentage:
+          type: number
+          format: float
+          example: -7.89
+          description: Percentage difference in balance compared to the previous day
+    Asset:
+      type: object
+      description: Basic information about a cryptocurrency asset (coin)
+      required:
+        - id
+        - symbol
+        - name
+        - current_price
+      properties:
+          id:
+            type: integer
+            description: Unique identifier for the coin
+            example: 25
+          symbol:
+            type: string
+            description: Ticker of the coin (e.g., BTC, ETH)
+            example: BTC
+          name:
+            type: string
+            description: Full name of the coin (e.g., Bitcoin, Ethereum)
+            example: Bitcoin
+          current_price:
+            type: number
+            description: Current price of the coin in USD
+            example: 123.45
+          icon_url:
+            type: string
+            description: URL to the coin's icon image
+            example: https://example.com/icons/btc.png
+    PortfolioAsset:
+      type: object
+      description: The current asset (coin) held on the user's balance
+      required:
+        - id
+        - symbol
+        - amount
+        - current_price
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the coin
+          example: 25
+        symbol:
+          type: string
+          description: Ticker of the coin (e.g., BTC, ETH)
+          example: BTC
+        amount:
+          type: number
+          description: Amount of the coin held in the wallet
+          example: 0.000123
+        current_price:
+          type: number
+          description: Current price of the coin in USD
+          example: 123.45
+        icon_url:
+          type: string
+          description: URL to the coin's icon image
+          example: https://example.com/icons/btc.png
+    Position:
+      type: object
+      description: info about current position on the market for specific asset. It can be either LONG or SHORT
+      required:
+        - id
+        - asset_id
+        - symbol
+        - amount
+        - entry_price
+        - side
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the position
+          example: 1042
+        asset_id:
+          type: integer
+          description: ID of the asset (coin) associated with the position
+          example: 25
+        symbol:
+          type: string
+          description: ticker of the coin (e.g., BTC, ETH)
+          example: "BTC"
+        amount:
+          type: number
+          format: double
+          description: amount of the coin in the position
+          example: 0.000123
+        entry_price:
+          type: number
+          format: double
+          description: entry price of the position in USD
+          example: 64000.00
+        pnl_fiat:
+          type: number
+          format: double
+          description: absolute profit/loss in USD for the position
+          example: -10.50
+        pnl_percent:
+          type: number
+          format: double
+          description: percentage profit/loss for the position
+          example: -7.89
+        side:
+          type: string
+          enum: [LONG, SHORT]
+          description: side of the position, can be either LONG or SHORT
+          example: "LONG"
+    PositionDetails:
+      description: Detailed information about a position, including timestamps for when the position was opened and closed.
+      allOf:
+        - $ref: '#/components/schemas/Position'
+        - type: object
+          required:
+            - created_at
+          properties:
+            created_at:
+              type: string
+              format: date-time
+              description: Date and time when the position was opened
+              example: "2024-05-15T12:00:00Z"
+            closed_at:
+              type: string
+              format: date-time
+              description: Date and time when the position was closed (if applicable)
+              example: "2024-05-16T14:30:00Z"
+              nullable: true
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
