@@ -16,7 +16,7 @@ paths:
   /wallet:
     get:
       summary: get wallet info
-      description: git info from wallet including balance and difference from previous day
+      description: get info from wallet including balance and difference from previous day
       tags:
         - Wallet
       responses:
@@ -40,7 +40,7 @@ paths:
   /wallet/history:
     get:
       summary: get wallet history
-      description: git history of wallet balance changes
+      description: get history of wallet balance changes
       tags:
         - Wallet
       parameters:
@@ -87,7 +87,7 @@ paths:
   /wallet/existing-coins:
     get:
       summary: get existing coins
-      description: git existing coins in wallet
+      description: get existing coins in wallet
       tags:
         - Wallet
       responses:
@@ -103,7 +103,7 @@ paths:
   /orders:
     get:
       summary: get orders
-      description: git orders of wallet
+      description: get orders of wallet
       tags:
         - Orders
       responses:
@@ -118,7 +118,7 @@ paths:
   /orders/{id}:
     get:
       summary: get order by id
-      description: git order by id
+      description: get order by id
       tags:
         - Orders
       parameters:
@@ -158,7 +158,7 @@ paths:
   /coins:
     get:
       summary: get coins
-      description: git coins info
+      description: get coins info
       tags:
         - Coins
       parameters:
