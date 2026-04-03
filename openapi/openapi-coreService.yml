@@ -100,12 +100,12 @@ paths:
                 items:
                   $ref: '#/components/schemas/PortfolioAsset'
 
-  /orders:
+  /positions:
     get:
-      summary: get orders
-      description: get orders of wallet
+      summary: get positions
+      description: get positions of wallet
       tags:
-        - Orders
+        - Positions
       responses:
         '200':
           description: successful operation
@@ -115,19 +115,19 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Position'
-  /orders/{id}:
+  /positions/{id}:
     get:
-      summary: get order by id
-      description: get order by id
+      summary: get position by id
+      description: get position by id
       tags:
-        - Orders
+        - Positions
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: integer
-          description: ID of the order to retrieve
+          description: ID of the position to retrieve
       responses:
         '200':
           description: successful operation
@@ -136,15 +136,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/PositionDetails'
         '404':
-          description: order not found
+          description: position not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                title: Order Not Found
+                title: position Not Found
                 status: 404
-                detail: No order found with the specified ID
+                detail: No position found with the specified ID
         '500':
           description: internal server error
           content:
@@ -198,6 +198,156 @@ paths:
                 title: Internal Server Error
                 status: 500
                 detail: An unexpected error occurred while processing the request
+    post:
+      summary: Create coin (Admin)
+      description: Asynchronous coin creation via parsingService (no long synchronous wait)
+      tags:
+        - Admin-tool
+      x-roles:
+        - "admin"
+        - "super-admin"
+      operationId: createCoin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewAsset'
+      responses:
+        '202':
+          description: request accepted, coin creation started
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - job_id
+                  - status
+                properties:
+                  job_id:
+                    type: string
+                    description: background task identifier
+                    example: "coin-create-7f3b9a21"
+                  status:
+                    type: string
+                    enum: [PENDING]
+                    example: PENDING
+        '400':
+          description: invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: coin already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /coins/{id}:
+    patch:
+      summary: Update coin (Admin)
+      description: Asynchronous coin update via parsingService (no long synchronous wait)
+      tags:
+        - Admin-tool
+      x-roles:
+        - "admin"
+        - "super-admin"
+      operationId: updateCoin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            description: ID of the coin to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewAsset'
+      responses:
+        '202':
+          description: request accepted, coin update started
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - job_id
+                  - status
+                properties:
+                  job_id:
+                    type: string
+                    description: background task identifier
+                    example: "coin-update-7f3b9a21"
+                  status:
+                    type: string
+                    enum: [PENDING]
+                    example: PENDING
+        '400':
+          description: invalid request body or parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: coin not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: delete coin (Admin)
+      description: delete coin from database. This action is irreversible and will remove all associated data
+      tags:
+        - Admin-tool
+      x-roles:
+        - "admin"
+        - "super-admin"
+      operationId: deleteCoin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            description: ID of the coin to delete
+      responses:
+        '204':
+          description: coin successfully deleted, no content in response
+        '400':
+          description: invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: coin not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 
 
 components:
@@ -261,6 +411,20 @@ components:
             type: number
             description: Current price of the coin in USD
             example: 123.45
+          icon_url:
+            type: string
+            description: URL to the coin's icon image
+            example: https://example.com/icons/btc.png
+    NewAsset:
+      type: object
+      description: Information required to create a new cryptocurrency asset (coin)
+      required:
+        - id
+      properties:
+          id:
+            type: integer
+            description: Unique identifier for the coin
+            example: 25
           icon_url:
             type: string
             description: URL to the coin's icon image
