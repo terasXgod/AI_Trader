@@ -347,6 +347,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  bot/settings:
+    get:
+      summary: return bot settings
+      description: return bot settings(confidence, stop, strategy, active)
+      tags:
+        - Bot
+      responses:
+        '200':
+          description: OK. bot settings retured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BotSettings'
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: change bot settings
+      description: change bot settings(confidence, stop, strategy, active)
+      tags:
+        - Bot
+      responses:
+        '204':
+          description: bot settings successfully applied, no content in response
+        '400':
+          description: invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
 
 
@@ -525,6 +564,33 @@ components:
               description: Date and time when the position was closed (if applicable)
               example: "2024-05-16T14:30:00Z"
               nullable: true
+    BotSettings:
+      type: object
+      description: bot settings
+      required:
+        - confidence
+        - stop_if_less
+        - active
+        - strategy
+      properties:
+        confidence:
+          type: number
+          description: model confidence
+          example: 0.7
+        stop_if_less:
+          type: number
+          description: the minimum balance to stop the bot
+          example: 6500.08
+        active:
+          type: boolean
+          description: is bot active
+          example: true
+        strategy:
+          type: integer
+          description: bot strategy
+          example: 2
+
+
 
   securitySchemes:
     bearerAuth:
