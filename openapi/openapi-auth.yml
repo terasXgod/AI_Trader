@@ -491,13 +491,13 @@ components:
     UserAuth:
       type: object
       required:
-        - login
+        - email
         - password
       properties:
-        login:
+        email:
           type: string
-          example: "user"
-          description: login or email
+          example: "user@mail.ru"
+          description: email
         password:
           type: string
           example: zhopa
