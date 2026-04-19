@@ -143,6 +143,8 @@ paths:
       description: get nonce for web3 authentication using wallet address
       tags:
         - auth-web3
+      security:
+        - bearerAuth: []
       parameters:
         - in: query
           name: wallet_address
