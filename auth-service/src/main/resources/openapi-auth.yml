@@ -143,8 +143,6 @@ paths:
       description: get nonce for web3 authentication using wallet address
       tags:
         - auth-web3
-      security:
-        - bearerAuth: []
       parameters:
         - in: query
           name: wallet_address
@@ -243,6 +241,8 @@ paths:
       description: bind web3 wallet to account using web3 signature (need to do)
       tags:
         - auth-web3
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -355,6 +355,8 @@ paths:
       description: logout from account using access token(from this session) or refresh token(from all sessions)
       tags:
         - token-management
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
