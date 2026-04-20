@@ -21,6 +21,17 @@ class SecurityConfig(
 ) {
     
     @Bean
+    fun webSecurityCustomizer(): WebSecurityCustomizer = WebSecurityCustomizer { web ->
+        web.ignoring().requestMatchers(
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs",
+            "/v3/api-docs/swagger-config",
+            "/v3/api-docs/**"
+        )
+    }
+    
+    @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         return http
             .csrf { it.disable() }
