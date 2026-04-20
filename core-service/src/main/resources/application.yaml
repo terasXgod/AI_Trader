@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: core-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/core_db}
+    username: ${SPRING_DATASOURCE_USERNAME:core_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:core_pass}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    open-in-view: false
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+
+server:
+  port: ${SERVER_PORT:8081}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    persistAuthorization: true
+    url: /openapi-coreService.yml
+    disable-swagger-default-url: true
+  api-docs:
+    path: /v3/api-docs
+
+auth:
+  service:
+    url: ${AUTH_SERVICE_URL:http://localhost:8080}
+jwt:
+  secret: ${JWT_SECRET}
