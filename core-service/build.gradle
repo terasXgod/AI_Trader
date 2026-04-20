@@ -79,7 +79,13 @@ openApiGenerate {
 
 kotlin.sourceSets.main.kotlin.srcDir(layout.buildDirectory.dir('generated/src/main/kotlin'))
 
+<<<<<<< HEAD
 //tasks.named('compileKotlin') {
 //	dependsOn 'openApiGenerate'
 //}
+=======
+tasks.named('compileKotlin') {
+	dependsOn 'openApiGenerate'
+}
+>>>>>>> 5c38a76 (feat: non-worked service((()
 

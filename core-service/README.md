@@ -8,10 +8,18 @@
 - Сгенерированные интерфейсы и DTO в `build/generated/src/main/kotlin`
 - Мок-реализация всех ручек в `CoreApiController`
 - Swagger UI
+<<<<<<< HEAD
+=======
+- Без обязательной базы данных и внешних сервисов
+>>>>>>> 5c38a76 (feat: non-worked service((()
 
 ## Запуск
 
 ```powershell
+<<<<<<< HEAD
+=======
+Set-Location "C:\Users\Admin\AI_Trader"
+>>>>>>> 5c38a76 (feat: non-worked service((()
 .\gradlew.bat :core-service:bootRun --no-daemon
 ```
 
@@ -24,6 +32,10 @@
 ## Сборка
 
 ```powershell
+<<<<<<< HEAD
+=======
+Set-Location "C:\Users\Admin\AI_Trader"
+>>>>>>> 5c38a76 (feat: non-worked service((()
 .\gradlew.bat :core-service:build --no-daemon
 ```
 
