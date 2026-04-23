@@ -177,7 +177,7 @@ paths:
               schema:
                 type: array
                 items:
-                $ref: '#/components/schemas/Asset'
+                  $ref: '#/components/schemas/Asset'
         '400':
           description: invalid parameters
           content:
@@ -347,7 +347,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  bot/settings:
+  /bot/settings:
     get:
       summary: return bot settings
       description: return bot settings(confidence, stop, strategy, active)
