@@ -3,6 +3,7 @@ package com.terasxgod.coreservice.config
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -14,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
+import javax.crypto.SecretKey
 
 @Component
 class JwtAuthenticationFilter(
@@ -66,9 +68,8 @@ class JwtAuthenticationFilter(
 
     private fun extractUsernameFromToken(token: String): String {
         return try {
-            val key = Keys.hmacShaKeyFor(jwtSecret.toByteArray())
             val claims: Claims = Jwts.parser()
-                .verifyWith(key)
+                .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
                 .payload
@@ -76,6 +77,11 @@ class JwtAuthenticationFilter(
         } catch (e: Exception) {
             throw JwtException("Invalid JWT token", e)
         }
+    }
+
+    private fun getSigningKey(): SecretKey {
+        val keyBytes = Decoders.BASE64.decode(jwtSecret)
+        return Keys.hmacShaKeyFor(keyBytes)
     }
 }
 
