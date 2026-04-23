@@ -1,2 +1,7 @@
 parser/data/*
 .idea
+
+.env
+HELP.md
+.gradle
+build
