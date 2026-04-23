@@ -8,12 +8,10 @@
 - Сгенерированные интерфейсы и DTO в `build/generated/src/main/kotlin`
 - Мок-реализация всех ручек в `CoreApiController`
 - Swagger UI
-- Без обязательной базы данных и внешних сервисов
 
 ## Запуск
 
 ```powershell
-Set-Location "C:\Users\Admin\AI_Trader"
 .\gradlew.bat :core-service:bootRun --no-daemon
 ```
 
@@ -26,7 +24,6 @@ Set-Location "C:\Users\Admin\AI_Trader"
 ## Сборка
 
 ```powershell
-Set-Location "C:\Users\Admin\AI_Trader"
 .\gradlew.bat :core-service:build --no-daemon
 ```
 
