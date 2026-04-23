@@ -1,36 +1,3 @@
 spring:
   application:
     name: notification-service
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-    consumer:
-      group-id: ${KAFKA_CONSUMER_GROUP:notification-service}
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    listener:
-      missing-topics-fatal: false
-  mail:
-    host: ${MAIL_HOST:localhost}
-    port: ${MAIL_PORT:1025}
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_PASSWORD:}
-    properties:
-      mail.smtp.auth: ${MAIL_SMTP_AUTH:false}
-      mail.smtp.starttls.enable: ${MAIL_SMTP_STARTTLS:false}
-
-notification:
-  mail:
-    enabled: ${NOTIFICATION_MAIL_ENABLED:false}
-  kafka:
-    retry:
-      max-attempts: ${NOTIFICATION_KAFKA_RETRY_MAX_ATTEMPTS:3}
-      backoff-ms: ${NOTIFICATION_KAFKA_RETRY_BACKOFF_MS:1000}
-
-server:
-  port: ${SERVER_PORT:8082}
-
-logging:
-  level:
-    com.terasxgod.notification_service: TRACE
-
