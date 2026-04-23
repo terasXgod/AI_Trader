@@ -46,22 +46,6 @@ class OpenApiConfig {
             .addSecurityItem(SecurityRequirement().addList("bearerAuth"))
     }
 
-    @Bean
-    fun forceBearerAuthCustomizer(): OpenApiCustomizer = OpenApiCustomizer { openApi ->
-        val components = openApi.components ?: Components().also { openApi.components = it }
-        val schemes = components.securitySchemes ?: linkedMapOf<String, ModelSecurityScheme>().also {
-            components.securitySchemes = it
-        }
-        schemes["bearerAuth"] = bearerScheme()
-
-        val hasGlobalBearer = openApi.security?.any { it.containsKey("bearerAuth") } == true
-        if (!hasGlobalBearer) {
-            if (openApi.security == null) {
-                openApi.security = mutableListOf()
-            }
-            openApi.security.add(SecurityRequirement().addList("bearerAuth"))
-        }
-    }
 }
 
 
