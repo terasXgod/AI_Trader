@@ -22,16 +22,16 @@ class GlobalExceptionHandler {
         request: WebRequest
     ): ResponseEntity<ErrorResponse> {
         val message = when {
-            ex.message?.contains("unique", ignoreCase = true) == true -> 
+            ex.message?.contains("unique", ignoreCase = true) == true ->
                 "User with this email already exists"
             else -> "Data integrity violation"
         }
-        
+
         val errorResponse = ErrorResponse(
             status = HttpStatus.CONFLICT.value(),
             message = message
         )
-        
+
         return ResponseEntity(errorResponse, HttpStatus.CONFLICT)
     }
 
@@ -44,7 +44,7 @@ class GlobalExceptionHandler {
             status = HttpStatus.BAD_REQUEST.value(),
             message = ex.message ?: "Invalid argument"
         )
-        
+
         return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
     }
 
@@ -57,7 +57,7 @@ class GlobalExceptionHandler {
             status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
             message = "Internal server error"
         )
-        
+
         return ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 }

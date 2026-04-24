@@ -2,9 +2,9 @@ spring:
   application:
     name: auth-service
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/auth_db}
-    username: ${SPRING_DATASOURCE_USERNAME:auth_user}
-    password: ${SPRING_DATASOURCE_PASSWORD:auth_pass}
+    url: ${POSTGRES_DATASOURCE_URL:jdbc:postgresql://localhost:5432/auth_db}
+    username: ${POSTGRES_USER:auth_user}
+    password: ${POSTGRES_PASSWORD:auth_pass}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:

@@ -29,8 +29,7 @@ class AuthController(
     }
 
     override fun authLoginPasswordPost(userAuth: UserAuth): ResponseEntity<JwtAuthResponse> {
-        val response = authService.login(userAuth)
-        return ResponseEntity(response, HttpStatus.OK)
+        return ResponseEntity(authService.login(userAuth), HttpStatus.OK)
     }
 
     override fun authLogoutPost(authLogoutPostRequest: AuthLogoutPostRequest): ResponseEntity<AuthLogoutPost200Response> {
@@ -57,7 +56,7 @@ class AuthController(
             authService.web3BindWallet(web3AuthRequest)
             val response = AuthWeb3BindPost200Response("Wallet successfully linked")
             ResponseEntity(response, HttpStatus.OK)
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             ResponseEntity(HttpStatus.FORBIDDEN)
         }
     }
@@ -66,7 +65,7 @@ class AuthController(
         return try {
             val response = authService.web3Login(web3AuthRequest)
             ResponseEntity(response, HttpStatus.OK)
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             ResponseEntity(HttpStatus.UNAUTHORIZED)
         }
     }
@@ -78,7 +77,7 @@ class AuthController(
             )
             val response = AuthWeb3NonceGet200Response(nonce = nonce)
             ResponseEntity(response, HttpStatus.OK)
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             ResponseEntity(HttpStatus.BAD_REQUEST)
         }
     }
