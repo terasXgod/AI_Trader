@@ -55,6 +55,7 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.POST, "/auth/refresh", "/v1/auth/refresh").permitAll()
                     .requestMatchers(HttpMethod.GET, "/auth/web3/nonce", "/v1/auth/web3/nonce").permitAll()
                     .requestMatchers(HttpMethod.POST, "/auth/web3/login", "/v1/auth/web3/login").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/auth/forgot-password").permitAll()
                     .anyRequest().authenticated() // запрос на бинд кошелька должен быть авторизованным хз как сделать нормально
 
             }

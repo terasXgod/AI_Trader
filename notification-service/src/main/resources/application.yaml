@@ -32,4 +32,5 @@ server:
 
 logging:
   level:
-    com.terasxgod.notification_service: INFO
+    com.terasxgod.notification_service: TRACE
+
