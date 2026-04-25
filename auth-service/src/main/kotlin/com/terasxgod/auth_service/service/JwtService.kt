@@ -1,6 +1,6 @@
 package com.terasxgod.auth_service.service
 
-import com.yourproject.auth.dto.JwtAuthResponse
+import com.terasxgod.auth_service.dto.JwtAuthResponse
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.io.Decoders

@@ -5,3 +5,4 @@ parser/data/*
 HELP.md
 .gradle
 build
+gradle/
