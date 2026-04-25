@@ -50,6 +50,7 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+	implementation("org.springframework.kafka:spring-kafka")
     implementation("org.web3j:core:4.10.3")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
 }

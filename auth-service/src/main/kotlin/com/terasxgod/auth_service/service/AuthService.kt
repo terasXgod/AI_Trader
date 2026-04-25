@@ -2,6 +2,7 @@ package com.terasxgod.auth_service.service
 
 import com.terasxgod.auth_service.entity.User
 import com.terasxgod.auth_service.entity.Web3
+import com.terasxgod.auth_service.messaging.NotificationEventPublisher
 import com.terasxgod.auth_service.repository.UserRepository
 import com.terasxgod.auth_service.repository.Web3Repository
 import com.yourproject.auth.dto.AuthForgotPasswordPost200Response
@@ -29,9 +30,17 @@ class AuthService(
     private val web3Repository: Web3Repository,
     private val nonceService: NonceService,
     private val passwordEncoder: PasswordEncoder,
-    private val authenticationManager: AuthenticationManager
+    private val authenticationManager: AuthenticationManager,
+    private val notificationEventPublisher: NotificationEventPublisher
 ){
     fun forgotPassword(authRequest: AuthForgotPasswordPostRequest): AuthForgotPasswordPost200Response {
+        userRepository.findByEmail(authRequest.email).ifPresent { user ->
+            notificationEventPublisher.publishResetPasswordEmail(
+                email = user.email,
+                name = user.email.substringBefore("@")
+            )
+        }
+
         return AuthForgotPasswordPost200Response(
             message = "Password reset email sent successfully to ${authRequest.email}."
             //нужно добавить чтобы отправлялось письмо с инструкциями по сбросу пароля, но это уже зависит от конкретной реализации почтового сервиса и не входит в базовую логику аутентификации
@@ -47,6 +56,11 @@ class AuthService(
             )
         )
 
+        notificationEventPublisher.publishWelcomeEmail(
+            email = user.email,
+            name = user.email.substringBefore("@")
+        )
+
         val response = jwtService.getJwtAuthResponse(user)
         refreshTokenService.saveUserRefreshToken(user, response.refreshToken)
         return response
@@ -58,7 +72,7 @@ class AuthService(
 
         try {
             authResult = authenticationManager.authenticate(authRequest)
-        } catch (e: BadCredentialsException) {
+        } catch (_: BadCredentialsException) {
             throw IllegalArgumentException("Invalid username or password")
         }
 
@@ -119,7 +133,7 @@ class AuthService(
             throw IllegalArgumentException("This wallet is already linked to another account")
         }
 
-        // ✅ Получаем текущего пользователя из SecurityContext
+        // Получаем текущего пользователя из SecurityContext
         val currentUser = getCurrentUser()
             ?: throw IllegalArgumentException("User must be authenticated to bind a wallet")
 
