@@ -1,14 +1,15 @@
 plugins {
-	kotlin("jvm")
-	kotlin("plugin.spring")
-	id("org.springframework.boot")
-	id("io.spring.dependency-management")
+	kotlin("jvm") version "2.2.21"
+	kotlin("plugin.spring") version "2.2.21"
+	id("org.springframework.boot") version "4.0.5"
+	id("io.spring.dependency-management") version "1.1.7"
 	kotlin("plugin.jpa") version "2.2.21"
     id("org.openapi.generator") version "7.3.0"
 }
 
 group = "com.terasxgod"
 version = "0.0.1-SNAPSHOT"
+description = "auth-service"
 
 java {
 	toolchain {
@@ -76,8 +77,8 @@ openApiGenerate {
     inputSpec.set("$projectDir/src/main/resources/openapi-auth.yml")
 	outputDir.set(layout.buildDirectory.dir("generated").get().asFile.absolutePath)
 
-    apiPackage.set("com.yourproject.auth.api")
-    modelPackage.set("com.yourproject.auth.dto")
+    apiPackage.set("com.terasxgod.auth_service.api")
+    modelPackage.set("com.terasxgod.auth_service.dto")
 
     configOptions.set(mapOf(
         "interfaceOnly" to "true",
@@ -91,7 +92,7 @@ openApiGenerate {
 // ВАЖНО: Говорим компилятору, где искать сгенерированные файлы
 kotlin.sourceSets["main"].kotlin.srcDir(layout.buildDirectory.dir("generated/src/main/kotlin"))
 
-//tasks.named("compileKotlin") {
-//	dependsOn("openApiGenerate")
-//}
-//
+tasks.named("compileKotlin") {
+	dependsOn("openApiGenerate")
+}
+
