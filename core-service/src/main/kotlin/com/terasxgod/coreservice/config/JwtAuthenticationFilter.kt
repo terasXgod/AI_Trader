@@ -83,10 +83,6 @@ class JwtAuthenticationFilter(
         val keyBytes = Decoders.BASE64.decode(jwtSecret)
         return Keys.hmacShaKeyFor(keyBytes)
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> 6a7cca7 (feat: working core-service without trading service relation)
 }
 
 
