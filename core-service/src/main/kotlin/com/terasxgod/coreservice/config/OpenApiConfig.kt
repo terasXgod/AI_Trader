@@ -46,8 +46,6 @@ class OpenApiConfig {
             .addSecurityItem(SecurityRequirement().addList("bearerAuth"))
     }
 
-<<<<<<< HEAD
-
     @Bean
     fun forceBearerAuthCustomizer(): OpenApiCustomizer = OpenApiCustomizer { openApi ->
         val components = openApi.components ?: Components().also { openApi.components = it }
@@ -64,8 +62,6 @@ class OpenApiConfig {
             openApi.security.add(SecurityRequirement().addList("bearerAuth"))
         }
     }
-=======
->>>>>>> 6a7cca7 (feat: working core-service without trading service relation)
 }
 
 
