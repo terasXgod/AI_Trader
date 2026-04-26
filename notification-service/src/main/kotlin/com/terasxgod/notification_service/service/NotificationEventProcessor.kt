@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class NotificationEventProcessor(
-    private val emailSenderService: LoggingEmailSenderService
+    private val emailSenderService: EmailSenderService
 ) {
     private val log = LoggerFactory.getLogger(NotificationEventProcessor::class.java)
     private val objectMapper = jacksonObjectMapper().findAndRegisterModules()
