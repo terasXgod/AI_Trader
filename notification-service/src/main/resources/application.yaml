@@ -2,7 +2,7 @@ spring:
   application:
     name: notification-service
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
     consumer:
       group-id: ${KAFKA_CONSUMER_GROUP:notification-service}
       auto-offset-reset: earliest
@@ -32,5 +32,5 @@ server:
 
 logging:
   level:
-    com.terasxgod.notification_service: TRACE
+    org.springframework: DEBUG
 
