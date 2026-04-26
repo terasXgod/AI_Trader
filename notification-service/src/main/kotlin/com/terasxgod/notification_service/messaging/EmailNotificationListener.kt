@@ -10,8 +10,7 @@ class EmailNotificationListener(
     private val notificationEventProcessor: NotificationEventProcessor
 ) {
     @KafkaListener(
-        topics = [KafkaTopics.EMAIL_NOTIFICATIONS_V1],
-        groupId = KafkaTopics.NOTIFICATION_SERVICE_GROUP
+        topics = [KafkaTopics.EMAIL_NOTIFICATIONS_V1]
     )
     fun consume(rawMessage: String) {
         notificationEventProcessor.processRawMessage(rawMessage)
