@@ -1,12 +1,17 @@
 package com.terasxgod.notification_service.config
 
 import com.terasxgod.common.kafka.KafkaTopics
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.TopicPartition
+import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
+import org.springframework.kafka.core.ConsumerFactory
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
@@ -18,11 +23,41 @@ import org.springframework.util.backoff.FixedBackOff
 class KafkaListenerConfig(
     @Value("\${spring.kafka.bootstrap-servers}")
     private val bootstrapServers: String,
+    @Value("\${spring.kafka.consumer.group-id:${KafkaTopics.NOTIFICATION_SERVICE_GROUP}}")
+    private val consumerGroupId: String,
+    @Value("\${spring.kafka.consumer.auto-offset-reset:earliest}")
+    private val autoOffsetReset: String,
+    @Value("\${spring.kafka.listener.auto-startup:true}")
+    private val listenerAutoStartup: Boolean,
     @Value("\${notification.kafka.retry.max-attempts:3}")
     private val maxAttempts: Long,
     @Value("\${notification.kafka.retry.backoff-ms:1000}")
     private val backOffMs: Long
 ) {
+
+    @Bean
+    fun notificationConsumerFactory(): ConsumerFactory<String, String> {
+        val props = mapOf(
+            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
+            ConsumerConfig.GROUP_ID_CONFIG to consumerGroupId,
+            ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to autoOffsetReset,
+            ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
+            ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java
+        )
+        return DefaultKafkaConsumerFactory(props)
+    }
+
+    @Bean("kafkaListenerContainerFactory")
+    fun kafkaListenerContainerFactory(
+        notificationConsumerFactory: ConsumerFactory<String, String>,
+        kafkaErrorHandler: DefaultErrorHandler
+    ): ConcurrentKafkaListenerContainerFactory<String, String> {
+        val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
+        factory.setConsumerFactory(notificationConsumerFactory)
+        factory.setCommonErrorHandler(kafkaErrorHandler)
+        factory.setAutoStartup(listenerAutoStartup)
+        return factory
+    }
 
     @Bean
     fun notificationDltProducerFactory(): ProducerFactory<String, String> {
