@@ -16,6 +16,7 @@ ENV JAVA_OPTS=""
 
 COPY --from=builder /app/build/libs/core-service-0.0.1-SNAPSHOT.jar app.jar
 
+
 EXPOSE 8081
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]

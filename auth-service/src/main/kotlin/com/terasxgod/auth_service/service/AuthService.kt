@@ -5,14 +5,18 @@ import com.terasxgod.auth_service.entity.Web3
 import com.terasxgod.auth_service.messaging.NotificationEventPublisher
 import com.terasxgod.auth_service.repository.UserRepository
 import com.terasxgod.auth_service.repository.Web3Repository
-import com.yourproject.auth.dto.AuthForgotPasswordPost200Response
-import com.yourproject.auth.dto.AuthForgotPasswordPostRequest
-import com.yourproject.auth.dto.AuthLogoutPost200Response
-import com.yourproject.auth.dto.AuthLogoutPostRequest
-import com.yourproject.auth.dto.AuthRefreshPostRequest
-import com.yourproject.auth.dto.JwtAuthResponse
-import com.yourproject.auth.dto.UserAuth
-import com.yourproject.auth.dto.Web3AuthRequest
+import com.terasxgod.auth_service.dto.AuthForgotPasswordPost200Response
+import com.terasxgod.auth_service.dto.AuthForgotPasswordPostRequest
+import com.terasxgod.auth_service.dto.AuthLogoutPost200Response
+import com.terasxgod.auth_service.dto.AuthLogoutPostRequest
+import com.terasxgod.auth_service.dto.AuthRefreshPostRequest
+import com.terasxgod.auth_service.dto.AuthResetPasswordPost200Response
+import com.terasxgod.auth_service.dto.AuthResetPasswordPostRequest
+import com.terasxgod.auth_service.dto.JwtAuthResponse
+import com.terasxgod.auth_service.dto.UserAuth
+import com.terasxgod.auth_service.dto.Web3AuthRequest
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -21,6 +25,9 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import java.security.MessageDigest
+import java.security.SecureRandom
+import java.util.concurrent.TimeUnit
 
 @Service
 class AuthService(
@@ -28,22 +35,81 @@ class AuthService(
     private val refreshTokenService: RefreshTokenService,
     private val userRepository: UserRepository,
     private val web3Repository: Web3Repository,
+    private val redisTemplate: StringRedisTemplate,
     private val nonceService: NonceService,
     private val passwordEncoder: PasswordEncoder,
     private val authenticationManager: AuthenticationManager,
-    private val notificationEventPublisher: NotificationEventPublisher
+    private val notificationEventPublisher: NotificationEventPublisher,
+    @Value("\${reset.link}")
+    private val RESET_LINK: String,
+    @Value("\${reset.rate-limit.max-requests}")
+    private val MAX_REQUESTS_LIMIT: Long,
+    @Value("\${reset.rate-limit.window-minutes}")
+    private val WINDOW_MINUTES: Long
 ){
+    private val TOKEN_EXPIRATION_MINUTES = 5L
+    private val TOKEN_KEY_PREFIX = "web2:forgot:"
+
     fun forgotPassword(authRequest: AuthForgotPasswordPostRequest): AuthForgotPasswordPost200Response {
+        val rateLimitKey = "rate:forgot:${authRequest.email}"
+        val attempts = redisTemplate.opsForValue().increment(rateLimitKey, 1) ?: 1
+
+        if (attempts == 1L) {
+            redisTemplate.expire(rateLimitKey, WINDOW_MINUTES, TimeUnit.MINUTES)
+        }
+
+        if (attempts > MAX_REQUESTS_LIMIT) {
+            return AuthForgotPasswordPost200Response(
+                message = "If an account with this email exists, you will receive password reset instructions shortly."
+            )
+        }
+
         userRepository.findByEmail(authRequest.email).ifPresent { user ->
+            val token: String = generateRandomToken()
+            redisTemplate.opsForValue().set(
+                getKeyForAddress(hashToken(token)),
+                user.email,
+                TOKEN_EXPIRATION_MINUTES,
+                TimeUnit.MINUTES
+
+            )
             notificationEventPublisher.publishResetPasswordEmail(
                 email = user.email,
-                name = user.email.substringBefore("@")
+                name = user.email,
+                resetUrl = getResetUrl(token)
             )
         }
 
         return AuthForgotPasswordPost200Response(
-            message = "Password reset email sent successfully to ${authRequest.email}."
+            message = "If an account with this email exists, you will receive password reset instructions shortly."
             //нужно добавить чтобы отправлялось письмо с инструкциями по сбросу пароля, но это уже зависит от конкретной реализации почтового сервиса и не входит в базовую логику аутентификации
+        )
+    }
+
+    fun resetPassword(authRequest: AuthResetPasswordPostRequest): AuthResetPasswordPost200Response {
+        if (authRequest.token.isBlank() || authRequest.newPassword.isBlank()) {
+            throw IllegalArgumentException("Token and password cannot be empty")
+        }
+
+        val tokenHash: String = hashToken(authRequest.token)
+        val key: String = getKeyForAddress(tokenHash)
+
+        val storedEmail = redisTemplate.opsForValue().get(key) ?: return AuthResetPasswordPost200Response(
+            message = "Invalid or expired token. Please request a new password reset."
+        )
+
+        val user = userRepository.findByEmail(storedEmail)
+            .orElseThrow { IllegalArgumentException("User not found") }
+
+        val encodedPassword = passwordEncoder.encode(authRequest.newPassword)
+            ?: throw BadCredentialsException("Invalid password")
+
+        user.setPasswordValue(encodedPassword)
+        userRepository.save(user)
+        redisTemplate.delete(key)
+
+        return AuthResetPasswordPost200Response(
+            message = "Password has been successfully reset."
         )
     }
 
@@ -204,5 +270,29 @@ class AuthService(
         
         // Ищем пользователя в БД по email (username)
         return userRepository.findByEmail(username).orElse(null)
+    }
+
+
+    private fun generateRandomToken(): String {
+        val random = SecureRandom()
+        val bytes = ByteArray(32)  // 256 бит для большей безопасности
+        random.nextBytes(bytes)
+
+        // Преобразуем байты в hex строку
+        return bytes.joinToString("") { "%02x".format(it) }
+    }
+
+    private fun getKeyForAddress(address: String): String {
+        return "$TOKEN_KEY_PREFIX$address"
+    }
+
+    private fun hashToken(token: String): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hashBytes = digest.digest(token.toByteArray())
+        return hashBytes.joinToString("") { "%02x".format(it) }
+    }
+
+    private fun getResetUrl(address: String): String {
+        return "$RESET_LINK/?token=$address"
     }
 }

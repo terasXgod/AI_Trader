@@ -2,19 +2,19 @@ package com.terasxgod.auth_service.controller
 
 import com.terasxgod.auth_service.service.AuthService
 import com.terasxgod.auth_service.service.NonceService
-import com.yourproject.auth.api.AuthApi
-import com.yourproject.auth.dto.AuthForgotPasswordPost200Response
-import com.yourproject.auth.dto.AuthForgotPasswordPostRequest
-import com.yourproject.auth.dto.AuthLogoutPost200Response
-import com.yourproject.auth.dto.AuthLogoutPostRequest
-import com.yourproject.auth.dto.AuthRefreshPostRequest
-import com.yourproject.auth.dto.AuthResetPasswordPost200Response
-import com.yourproject.auth.dto.AuthResetPasswordPostRequest
-import com.yourproject.auth.dto.AuthWeb3BindPost200Response
-import com.yourproject.auth.dto.AuthWeb3NonceGet200Response
-import com.yourproject.auth.dto.JwtAuthResponse
-import com.yourproject.auth.dto.UserAuth
-import com.yourproject.auth.dto.Web3AuthRequest
+import com.terasxgod.auth_service.api.AuthApi
+import com.terasxgod.auth_service.dto.AuthForgotPasswordPost200Response
+import com.terasxgod.auth_service.dto.AuthForgotPasswordPostRequest
+import com.terasxgod.auth_service.dto.AuthLogoutPost200Response
+import com.terasxgod.auth_service.dto.AuthLogoutPostRequest
+import com.terasxgod.auth_service.dto.AuthRefreshPostRequest
+import com.terasxgod.auth_service.dto.AuthResetPasswordPost200Response
+import com.terasxgod.auth_service.dto.AuthResetPasswordPostRequest
+import com.terasxgod.auth_service.dto.AuthWeb3BindPost200Response
+import com.terasxgod.auth_service.dto.AuthWeb3NonceGet200Response
+import com.terasxgod.auth_service.dto.JwtAuthResponse
+import com.terasxgod.auth_service.dto.UserAuth
+import com.terasxgod.auth_service.dto.Web3AuthRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
@@ -45,8 +45,7 @@ class AuthController(
     }
 
     override fun authResetPasswordPost(authResetPasswordPostRequest: AuthResetPasswordPostRequest): ResponseEntity<AuthResetPasswordPost200Response> {
-        //челу приходит на почту ссылка, по которой он переходит и восстанавливает пароль без добавления в request дополнительного поля, пусть этим занимается фронтенд
-        return super.authResetPasswordPost(authResetPasswordPostRequest)
+        return ResponseEntity(authService.resetPassword(authResetPasswordPostRequest), HttpStatus.OK)
     }
 
 

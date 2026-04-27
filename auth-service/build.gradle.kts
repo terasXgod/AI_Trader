@@ -1,14 +1,15 @@
 plugins {
-	kotlin("jvm")
-	kotlin("plugin.spring")
-	id("org.springframework.boot")
-	id("io.spring.dependency-management")
+	kotlin("jvm") version "2.2.21"
+	kotlin("plugin.spring") version "2.2.21"
+	id("org.springframework.boot") version "4.0.5"
+	id("io.spring.dependency-management") version "1.1.7"
 	kotlin("plugin.jpa") version "2.2.21"
     id("org.openapi.generator") version "7.3.0"
 }
 
 group = "com.terasxgod"
 version = "0.0.1-SNAPSHOT"
+description = "auth-service"
 
 java {
 	toolchain {
@@ -43,8 +44,8 @@ dependencies {
     testRuntimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     testRuntimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-	implementation("io.swagger.core.v3:swagger-annotations:2.2.30")
-	implementation("io.swagger.core.v3:swagger-models:2.2.30")
+	implementation("io.swagger.core.v3:swagger-annotations:2.2.43")
+	implementation("io.swagger.core.v3:swagger-models:2.2.43")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
@@ -76,8 +77,8 @@ openApiGenerate {
     inputSpec.set("$projectDir/src/main/resources/openapi-auth.yml")
 	outputDir.set(layout.buildDirectory.dir("generated").get().asFile.absolutePath)
 
-    apiPackage.set("com.yourproject.auth.api")
-    modelPackage.set("com.yourproject.auth.dto")
+    apiPackage.set("com.terasxgod.auth_service.api")
+    modelPackage.set("com.terasxgod.auth_service.dto")
 
     configOptions.set(mapOf(
         "interfaceOnly" to "true",
