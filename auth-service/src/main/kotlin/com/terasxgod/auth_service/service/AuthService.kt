@@ -10,6 +10,8 @@ import com.terasxgod.auth_service.dto.AuthForgotPasswordPostRequest
 import com.terasxgod.auth_service.dto.AuthLogoutPost200Response
 import com.terasxgod.auth_service.dto.AuthLogoutPostRequest
 import com.terasxgod.auth_service.dto.AuthRefreshPostRequest
+import com.terasxgod.auth_service.dto.AuthResetPasswordPost200Response
+import com.terasxgod.auth_service.dto.AuthResetPasswordPostRequest
 import com.terasxgod.auth_service.dto.JwtAuthResponse
 import com.terasxgod.auth_service.dto.UserAuth
 import com.terasxgod.auth_service.dto.Web3AuthRequest
@@ -81,6 +83,33 @@ class AuthService(
         return AuthForgotPasswordPost200Response(
             message = "If an account with this email exists, you will receive password reset instructions shortly."
             //нужно добавить чтобы отправлялось письмо с инструкциями по сбросу пароля, но это уже зависит от конкретной реализации почтового сервиса и не входит в базовую логику аутентификации
+        )
+    }
+
+    fun resetPassword(authRequest: AuthResetPasswordPostRequest): AuthResetPasswordPost200Response {
+        if (authRequest.token.isBlank() || authRequest.newPassword.isBlank()) {
+            throw IllegalArgumentException("Token and password cannot be empty")
+        }
+
+        val tokenHash: String = hashToken(authRequest.token)
+        val key: String = getKeyForAddress(tokenHash)
+
+        val storedEmail = redisTemplate.opsForValue().get(key) ?: return AuthResetPasswordPost200Response(
+            message = "Invalid or expired token. Please request a new password reset."
+        )
+
+        val user = userRepository.findByEmail(storedEmail)
+            .orElseThrow { IllegalArgumentException("User not found") }
+
+        val encodedPassword = passwordEncoder.encode(authRequest.newPassword)
+            ?: throw BadCredentialsException("Invalid password")
+
+        user.setPasswordValue(encodedPassword)
+        userRepository.save(user)
+        redisTemplate.delete(key)
+
+        return AuthResetPasswordPost200Response(
+            message = "Password has been successfully reset."
         )
     }
 

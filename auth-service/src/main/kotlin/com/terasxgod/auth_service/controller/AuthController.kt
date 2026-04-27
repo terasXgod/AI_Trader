@@ -45,8 +45,7 @@ class AuthController(
     }
 
     override fun authResetPasswordPost(authResetPasswordPostRequest: AuthResetPasswordPostRequest): ResponseEntity<AuthResetPasswordPost200Response> {
-        //челу приходит на почту ссылка, по которой он переходит и восстанавливает пароль без добавления в request дополнительного поля, пусть этим занимается фронтенд
-        return super.authResetPasswordPost(authResetPasswordPostRequest)
+        return ResponseEntity(authService.resetPassword(authResetPasswordPostRequest), HttpStatus.OK)
     }
 
 

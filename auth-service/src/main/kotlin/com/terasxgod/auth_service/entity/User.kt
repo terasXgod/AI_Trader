@@ -43,6 +43,10 @@ data class User(
         passwordValue = encodedPassword
     }
 
+    fun setPasswordValue(password: String) {
+        passwordValue = password
+    }
+
     override fun isAccountNonExpired(): Boolean = true
 
     override fun isAccountNonLocked(): Boolean = true
