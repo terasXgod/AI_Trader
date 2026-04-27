@@ -39,7 +39,11 @@ class AuthService(
     private val authenticationManager: AuthenticationManager,
     private val notificationEventPublisher: NotificationEventPublisher,
     @Value("\${reset.link}")
-    private val RESET_LINK: String
+    private val RESET_LINK: String,
+    @Value("\${reset.rate-limit.max-requests}")
+    private val MAX_REQUESTS_LIMIT: Long,
+    @Value("\${reset.rate-limit.window-minutes}")
+    private val WINDOW_MINUTES: Long
 ){
     private val TOKEN_EXPIRATION_MINUTES = 5L
     private val TOKEN_KEY_PREFIX = "web2:forgot:"
@@ -49,10 +53,10 @@ class AuthService(
         val attempts = redisTemplate.opsForValue().increment(rateLimitKey, 1) ?: 1
 
         if (attempts == 1L) {
-            redisTemplate.expire(rateLimitKey, 15, TimeUnit.MINUTES)
+            redisTemplate.expire(rateLimitKey, WINDOW_MINUTES, TimeUnit.MINUTES)
         }
 
-        if (attempts > 3) {
+        if (attempts > MAX_REQUESTS_LIMIT) {
             return AuthForgotPasswordPost200Response(
                 message = "If an account with this email exists, you will receive password reset instructions shortly."
             )
