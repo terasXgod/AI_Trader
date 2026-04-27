@@ -40,6 +40,9 @@ rate-limit:
     max-requests: 20
 reset:
   link: "http://localhost:8080/auth/reset-password"
+  rate-limit:
+    max-requests: 3
+    window-minutes: 15 # в минутах
 springdoc:
   swagger-ui:
     enabled: true
