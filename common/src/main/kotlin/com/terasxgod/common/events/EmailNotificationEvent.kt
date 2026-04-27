@@ -7,8 +7,7 @@ enum class EmailEventType {
 }
 
 data class EmailRecipient(
-    val email: String,
-    val name: String? = null,
+    val email: String
 )
 
 data class EmailTemplate(
