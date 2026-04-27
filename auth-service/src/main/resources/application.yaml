@@ -38,7 +38,8 @@ rate-limit:
   web3-nonce:
     window-seconds: 60
     max-requests: 20
-
+reset:
+  link: "http://localhost:8080/auth/reset-password"
 springdoc:
   swagger-ui:
     enabled: true

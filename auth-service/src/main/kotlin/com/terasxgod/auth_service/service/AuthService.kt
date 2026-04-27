@@ -10,11 +10,10 @@ import com.terasxgod.auth_service.dto.AuthForgotPasswordPostRequest
 import com.terasxgod.auth_service.dto.AuthLogoutPost200Response
 import com.terasxgod.auth_service.dto.AuthLogoutPostRequest
 import com.terasxgod.auth_service.dto.AuthRefreshPostRequest
-import com.terasxgod.auth_service.dto.AuthResetPasswordPost200Response
-import com.terasxgod.auth_service.dto.AuthResetPasswordPostRequest
 import com.terasxgod.auth_service.dto.JwtAuthResponse
 import com.terasxgod.auth_service.dto.UserAuth
 import com.terasxgod.auth_service.dto.Web3AuthRequest
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
@@ -38,30 +37,45 @@ class AuthService(
     private val nonceService: NonceService,
     private val passwordEncoder: PasswordEncoder,
     private val authenticationManager: AuthenticationManager,
-    private val notificationEventPublisher: NotificationEventPublisher
+    private val notificationEventPublisher: NotificationEventPublisher,
+    @Value("\${reset.link}")
+    private val RESET_LINK: String
 ){
     private val TOKEN_EXPIRATION_MINUTES = 5L
-    private val TOKEN_KEY_PREFIX = "web2:token:"
+    private val TOKEN_KEY_PREFIX = "web2:forgot:"
 
     fun forgotPassword(authRequest: AuthForgotPasswordPostRequest): AuthForgotPasswordPost200Response {
+        val rateLimitKey = "rate:forgot:${authRequest.email}"
+        val attempts = redisTemplate.opsForValue().increment(rateLimitKey, 1) ?: 1
+
+        if (attempts == 1L) {
+            redisTemplate.expire(rateLimitKey, 15, TimeUnit.MINUTES)
+        }
+
+        if (attempts > 3) {
+            return AuthForgotPasswordPost200Response(
+                message = "If an account with this email exists, you will receive password reset instructions shortly."
+            )
+        }
 
         userRepository.findByEmail(authRequest.email).ifPresent { user ->
             val token: String = generateRandomToken()
             redisTemplate.opsForValue().set(
-                getKeyForAddress(user.email),
-                hashToken(token),
+                getKeyForAddress(hashToken(token)),
+                user.email,
                 TOKEN_EXPIRATION_MINUTES,
                 TimeUnit.MINUTES
 
             )
             notificationEventPublisher.publishResetPasswordEmail(
                 email = user.email,
-                token = token
+                name = user.email,
+                resetUrl = getResetUrl(token)
             )
         }
 
         return AuthForgotPasswordPost200Response(
-            message = "Password reset email sent successfully to ${authRequest.email}. User has 5 minutes to reset password."
+            message = "If an account with this email exists, you will receive password reset instructions shortly."
             //нужно добавить чтобы отправлялось письмо с инструкциями по сбросу пароля, но это уже зависит от конкретной реализации почтового сервиса и не входит в базовую логику аутентификации
         )
     }
@@ -243,5 +257,9 @@ class AuthService(
         val digest = MessageDigest.getInstance("SHA-256")
         val hashBytes = digest.digest(token.toByteArray())
         return hashBytes.joinToString("") { "%02x".format(it) }
+    }
+
+    private fun getResetUrl(address: String): String {
+        return "$RESET_LINK/?token=$address"
     }
 }
