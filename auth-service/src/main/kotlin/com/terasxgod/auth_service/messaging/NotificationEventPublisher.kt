@@ -36,14 +36,14 @@ class NotificationEventPublisher(
 		)
 	}
 
-	fun publishResetPasswordEmail(email: String, name: String = "",token: String, correlationId: String? = null) {
+	fun publishResetPasswordEmail(email: String, name: String = "",resetUrl: String, correlationId: String? = null) {
 		publish(
 			buildEvent(
 				eventType = EmailEventType.RESET_PASSWORD_EMAIL,
 				email = email,
                 params = mapOf(
                     "name" to name,
-                    "token" to token
+                    "url" to resetUrl
                 ),
 				subject = "Сброс пароля",
 				templateId = "reset_password_v1",
