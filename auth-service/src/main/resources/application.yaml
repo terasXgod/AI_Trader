@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: ${POSTGRES_DATASOURCE_URL:jdbc:postgresql://localhost:5432/auth_db}
+    username: ${POSTGRES_USER:auth_user}
+    password: ${POSTGRES_PASSWORD:auth_pass}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    open-in-view: false
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      retries: 10
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000} # 24 часа в миллисекундах
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 дней
+rate-limit:
+  login:
+    window-seconds: 60
+    max-requests: 5
+  web3-login:
+    window-seconds: 60
+    max-requests: 10
+  web3-nonce:
+    window-seconds: 60
+    max-requests: 20
+reset:
+  link: "http://localhost:8080/auth/reset-password"
+  rate-limit:
+    max-requests: 3
+    window-minutes: 15 # в минутах
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  show-actuator: false
+
+
