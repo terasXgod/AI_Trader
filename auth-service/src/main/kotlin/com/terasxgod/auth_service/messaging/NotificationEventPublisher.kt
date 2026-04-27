@@ -21,12 +21,14 @@ class NotificationEventPublisher(
 	private val log = LoggerFactory.getLogger(NotificationEventPublisher::class.java)
 	private val objectMapper = jacksonObjectMapper().findAndRegisterModules()
 
-	fun publishWelcomeEmail(email: String, name: String? = null, correlationId: String? = null) {
+	fun publishWelcomeEmail(email: String, name: String = "", correlationId: String? = null) {
 		publish(
 			buildEvent(
 				eventType = EmailEventType.WELCOME_EMAIL,
 				email = email,
-				name = name,
+                params = mapOf(
+                    "name" to name,
+                ),
 				subject = "Добро пожаловать!",
 				templateId = "welcome_v1",
 				correlationId = correlationId
@@ -34,12 +36,15 @@ class NotificationEventPublisher(
 		)
 	}
 
-	fun publishResetPasswordEmail(email: String, name: String? = null, correlationId: String? = null) {
+	fun publishResetPasswordEmail(email: String, name: String = "",token: String, correlationId: String? = null) {
 		publish(
 			buildEvent(
 				eventType = EmailEventType.RESET_PASSWORD_EMAIL,
 				email = email,
-				name = name,
+                params = mapOf(
+                    "name" to name,
+                    "token" to token
+                ),
 				subject = "Сброс пароля",
 				templateId = "reset_password_v1",
 				correlationId = correlationId
@@ -50,22 +55,21 @@ class NotificationEventPublisher(
 	private fun buildEvent(
 		eventType: EmailEventType,
 		email: String,
-		name: String?,
+        params: Map<String, String>,
 		subject: String,
 		templateId: String,
 		correlationId: String?
 	): EmailNotificationEvent {
-		val safeName = name ?: email.substringBefore("@")
 		return EmailNotificationEvent(
 			eventId = UUID.randomUUID().toString(),
 			eventVersion = 1,
 			eventType = eventType,
 			occurredAt = Instant.now().toString(),
-			recipient = EmailRecipient(email = email, name = safeName),
+			recipient = EmailRecipient(email = email),
 			template = EmailTemplate(
 				templateId = templateId,
 				subject = subject,
-				params = mapOf("name" to safeName)
+				params = params
 			),
 			metadata = EventMetadata(
 				sourceService = "auth-service",
