@@ -10,6 +10,8 @@ import com.terasxgod.auth_service.dto.AuthForgotPasswordPostRequest
 import com.terasxgod.auth_service.dto.AuthLogoutPost200Response
 import com.terasxgod.auth_service.dto.AuthLogoutPostRequest
 import com.terasxgod.auth_service.dto.AuthRefreshPostRequest
+import com.terasxgod.auth_service.dto.AuthResetPasswordPost200Response
+import com.terasxgod.auth_service.dto.AuthResetPasswordPostRequest
 import com.terasxgod.auth_service.dto.JwtAuthResponse
 import com.terasxgod.auth_service.dto.UserAuth
 import com.terasxgod.auth_service.dto.Web3AuthRequest
@@ -22,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.concurrent.TimeUnit
 
@@ -46,7 +49,7 @@ class AuthService(
             val token: String = generateRandomToken()
             redisTemplate.opsForValue().set(
                 getKeyForAddress(user.email),
-                token,
+                hashToken(token),
                 TOKEN_EXPIRATION_MINUTES,
                 TimeUnit.MINUTES
 
@@ -56,7 +59,7 @@ class AuthService(
                 token = token
             )
         }
-        
+
         return AuthForgotPasswordPost200Response(
             message = "Password reset email sent successfully to ${authRequest.email}. User has 5 minutes to reset password."
             //нужно добавить чтобы отправлялось письмо с инструкциями по сбросу пароля, но это уже зависит от конкретной реализации почтового сервиса и не входит в базовую логику аутентификации
@@ -234,5 +237,11 @@ class AuthService(
 
     private fun getKeyForAddress(address: String): String {
         return "$TOKEN_KEY_PREFIX$address"
+    }
+
+    private fun hashToken(token: String): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hashBytes = digest.digest(token.toByteArray())
+        return hashBytes.joinToString("") { "%02x".format(it) }
     }
 }
