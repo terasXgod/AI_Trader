@@ -84,4 +84,3 @@ kotlin.sourceSets.main.kotlin.srcDir(layout.buildDirectory.dir('generated/src/ma
 tasks.named('compileKotlin') {
 	dependsOn 'openApiGenerate'
 }
-
