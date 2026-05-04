@@ -1,7 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: 2
-      author: teraxgod
+      author: terasxgod
       changes:
         - createTable:
             tableName: refresh_tokens
