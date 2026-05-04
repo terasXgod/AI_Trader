@@ -1,0 +1,53 @@
+databaseChangeLog:
+  - changeSet:
+      id: 3
+      author: terasxgod
+      changes:
+        - createTable:
+            tableName: web3_wallets
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: wallet_address
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_verified
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+                  defaultValue: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_nonce
+                  type: VARCHAR(255)
+        - addForeignKeyConstraint:
+            constraintName: fk_web3_wallets_user_id
+            baseTableName: web3_wallets
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - createIndex:
+            indexName: idx_web3_wallets_user_id
+            tableName: web3_wallets
+            columns:
+              - column:
+                  name: user_id

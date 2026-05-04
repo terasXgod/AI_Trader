@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changes/001-create-users-table.yaml
+  - include:
+      file: db/changelog/changes/002-create-refresh-tokens-table.yaml
+  - include:
+      file: db/changelog/changes/003-create-web3-wallets-table.yaml
