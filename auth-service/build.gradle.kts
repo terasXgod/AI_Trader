@@ -54,6 +54,7 @@ dependencies {
 	implementation("org.springframework.kafka:spring-kafka")
     implementation("org.web3j:core:4.10.3")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
+    implementation("org.liquibase:liquibase-core")
 }
 
 kotlin {
