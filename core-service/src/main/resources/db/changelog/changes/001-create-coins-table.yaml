@@ -1,0 +1,33 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: terasxgod
+      changes:
+        - createTable:
+            tableName: coin
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: symbol
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: icon_url
+                  type: VARCHAR(1000)
+        - createIndex:
+            indexName: idx_coin_symbol
+            tableName: coin
+            columns:
+              - column:
+                  name: symbol
