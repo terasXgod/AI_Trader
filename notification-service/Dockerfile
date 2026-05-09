@@ -1,3 +1,13 @@
+FROM eclipse-temurin:21-jdk AS builder
+
+WORKDIR /app
+
+# Копируем модуль целиком, чтобы Gradle Wrapper мог собрать bootJar внутри контейнера
+COPY . .
+
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew && ./gradlew :notification-service:bootJar --no-daemon
+
+
 FROM eclipse-temurin:21-jre
 
 WORKDIR /app
