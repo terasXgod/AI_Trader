@@ -1,0 +1,559 @@
+openapi: 3.0.3
+info:
+  title: Crypto AI Predictor API
+  description: API для получения прогнозов по криптовалютам от нейросети
+  version: 1.0.0
+servers:
+  - url: пока ещё нет
+    description: Продакшен
+  - url: http://localhost:8000/v1
+    description: Локальная разработка
+
+paths:
+  # WEB2 FLOW
+  /auth/register:
+    post:
+      summary: login to account
+      description: login to account with password or any services(need to do)
+      tags:
+        - auth-web2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserAuth'
+      responses:
+        '201':
+          description: User created. return access and refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwtAuthResponse'
+                properties:
+                    access_token:
+                      type: string
+                      description: JWT access token
+                      example: 1234567890abcdef
+                    refresh_token:
+                      type: string
+                      description: JWT refresh token
+                      example: 1234567890abcdef
+                    user_id:
+                      type: integer
+                      description: ID of the authenticated user
+                      example: 1
+        '400':
+          description: not valid password or login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Invalid input"
+                status: 400
+                detail: "Password must be at least 8 characters long and contain a number."
+        '409':
+            description: user with this login already exists
+            content:
+                application/json:
+                  schema:
+                      $ref: '#/components/schemas/ErrorResponse'
+                  example:
+                      title: "Conflict"
+                      status: 409
+                      detail: "A user with this login already exists."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Internal Server Error"
+                status: 500
+                detail: "An unexpected error occurred. Please try again later."
+  /auth/login-password:
+    post:
+      summary: login to account
+      description: login to account with password or any services(need to do)
+      tags:
+        - auth-web2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserAuth'
+      responses:
+        '200':
+          description: User authenticated. return access and refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwtAuthResponse'
+                properties:
+                    access_token:
+                      type: string
+                      description: JWT access token
+                      example: 1234567890abcdef
+                    refresh_token:
+                      type: string
+                      description: JWT refresh token
+                      example: 1234567890abcdef
+                    user_id:
+                      type: integer
+                      description: ID of the authenticated user
+                      example: 1
+        '400':
+          description: not valid password or login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Invalid input"
+                status: 400
+                detail: "Password must be at least 8 characters long and contain a number."
+        '401':
+            description: invalid credentials
+            content:
+                application/json:
+                  schema:
+                      $ref: '#/components/schemas/ErrorResponse'
+                  example:
+                      title: "Unauthorized"
+                      status: 401
+                      detail: "Invalid login or password."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Internal Server Error"
+                status: 500
+                detail: "An unexpected error occurred. Please try again later."
+
+  # WEB3 FLOW
+  /auth/web3/nonce:
+    get:
+      summary: get nonce for web3 authentication
+      description: get nonce for web3 authentication using wallet address
+      tags:
+        - auth-web3
+      parameters:
+        - in: query
+          name: wallet_address
+          schema:
+            type: string
+            description: wallet address for authentication
+            example: "0x1234567890abcdef1234567890abcdef12345678"
+      responses:
+        '200':
+          description: Nonce generated. return nonce for signing
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - nonce
+                properties:
+                  nonce:
+                    type: string
+                    description: nonce for signing
+                    example: "1234567890abcdef"
+        '400':
+          description: not valid wallet address
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Invalid input"
+                status: 400
+                detail: "Wallet address is missing or invalid."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Internal Server Error"
+                status: 500
+                detail: "An unexpected error occurred. Please try again later."
+
+  /auth/web3/login:
+    post:
+      summary: login to account using web3
+      description: login to account using web3 signature
+      tags:
+        - auth-web3
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Web3AuthRequest'
+      responses:
+        '200':
+          description: User authenticated. return access and refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwtAuthResponse'
+        '400':
+          description: not valid wallet address or signature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Invalid input"
+                status: 400
+                detail: "Wallet address or signature is missing or invalid."
+        '401':
+          description: invalid signature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Unauthorized"
+                status: 401
+                detail: "Invalid signature."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Internal Server Error"
+                status: 500
+                detail: "An unexpected error occurred. Please try again later."
+
+  /auth/web3/bind:
+    post:
+      summary: bind web3 wallet to account
+      description: bind web3 wallet to account using web3 signature (need to do)
+      tags:
+        - auth-web3
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Web3AuthRequest'
+      responses:
+        '200':
+          description: Wallet bound. return success message
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: success message
+                    example: "Wallet bound successfully."
+        '400':
+          description: not valid wallet address or signature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Invalid input"
+                status: 400
+                detail: "Wallet address or signature is missing or invalid."
+        '401':
+          description: invalid signature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Unauthorized"
+                status: 401
+                detail: "Invalid signature."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Internal Server Error"
+                status: 500
+                detail: "An unexpected error occurred. Please try again later."
+
+  # TOKEN MANAGEMENT
+  /auth/refresh:
+    post:
+      summary: refresh access token
+      description: refresh access token using refresh token
+      tags:
+        - token-management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+                  description: JWT refresh token
+                  example: 1234567890abcdef
+      responses:
+        '200':
+          description: Access token refreshed. return new access and refresh token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwtAuthResponse'
+        '400':
+          description: not valid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Invalid input"
+                status: 400
+                detail: "Refresh token is missing or invalid."
+        '401':
+          description: invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Unauthorized"
+                status: 401
+                detail: "Invalid refresh token."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Internal Server Error"
+                status: 500
+                detail: "An unexpected error occurred. Please try again later."
+
+  /auth/logout:
+    post:
+      summary: logout from account
+      description: logout from account using access token(from this session) or refresh token(from all sessions)
+      tags:
+        - token-management
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                required:
+                  - token
+                properties:
+                  token:
+                    type: string
+                    description: JWT access or refresh token
+                    example: 1234567890abcdef
+      responses:
+        '200':
+          description: User logged out. return success message
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: success message
+                    example: "User logged out successfully."
+
+  # PASSWORD RECOVERY
+  /auth/forgot-password:
+    post:
+      summary: forgot password
+      description: send email with reset password link
+      tags:
+        - auth-web2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  description: user email
+                  example: "zhopa@mail.ru"
+      responses:
+        '200':
+          description: Email sent. return success message
+          content:
+            application/json:
+              schema:
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    description: success message
+                    example: "Password reset email sent successfully."
+        '400':
+          description: not valid email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Invalid input"
+                status: 400
+                detail: "Email is missing or invalid."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Internal Server Error"
+                status: 500
+                detail: "An unexpected error occurred. Please try again later."
+  /auth/reset-password:
+    post:
+      summary: reset password
+      description: reset password using token from email
+      tags:
+        - auth-web2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - token
+                - new_password
+              properties:
+                token:
+                  type: string
+                  description: token from email
+                  example: 1234567890abcdef
+                new_password:
+                  type: string
+                  description: new password
+                  example: zhopa1234
+      responses:
+        '200':
+          description: Password reset. return success message
+          content:
+            application/json:
+              schema:
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    description: success message
+                    example: "Password reset successfully."
+        '400':
+          description: not valid token or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Invalid input"
+                status: 400
+                detail: "Token is missing or invalid, or new password does not meet requirements."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: "Internal Server Error"
+                status: 500
+                detail: "An unexpected error occurred. Please try again later."
+components:
+  schemas:
+    UserAuth:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          example: "user@mail.ru"
+          description: email
+        password:
+          type: string
+          example: zhopa
+          description: password
+    ErrorResponse:
+      type: object
+      required:
+        - title
+        - status
+        - detail
+      properties:
+        title:
+          type: string
+          description: short title of error
+        status:
+          type: integer
+          description: http status code
+        detail:
+          type: string
+          description: detail description for developers and logs
+    JwtAuthResponse:
+      type: object
+      required:
+        - access_token
+        - refresh_token
+      properties:
+        access_token:
+          type: string
+          description: JWT access token
+          example: 1234567890abcdef
+        refresh_token:
+          type: string
+          description: JWT refresh token
+          example: 1234567890abcdef
+    Web3AuthRequest:
+      type: object
+      required:
+        - wallet_address
+        - signature
+      properties:
+        wallet_address:
+          type: string
+          description: wallet address for authentication
+          example: "0x1234567890abcdef1234567890abcdef12345678"
+        signature:
+          type: string
+          description: signature of nonce for authentication
+          example: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
